@@ -1,0 +1,102 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>TrustShop — AI Shopping Agent</title>
+  <meta name="description" content="AI shopping agent that finds products across the web, verifies prices, protects your budget, checks compatibility, and helps you make a trustworthy purchase decision.">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+<div class="app">
+  <header class="topbar">
+    <div class="brand">Trust<span>Shop</span> <small class="brand-sub">by Razorpay Buildathon</small></div>
+    <div class="topbar-right">
+      <div class="pill customer-first" title="Hard budgets · No forced upselling · Honest data · Exact compatibility">BUDGET PROTECTED</div>
+      <div id="backendStatus" class="backend-status">Connecting…</div>
+    </div>
+  </header>
+
+  <section class="hero">
+    <small>VOICE-FIRST AI SHOPPING AGENT • LIVE PRICES FROM AMAZON · FLIPKART · BIKEWALE · CARDEKHO</small>
+    <h1>Shopping with trust,<br>not just search.</h1>
+    <p>An AI agent that finds products, verifies prices, compares stores, protects your budget, and checks compatibility — so you can shop with confidence.</p>
+  </section>
+
+  <!-- Problems Solved Dashboard -->
+  <section class="panel problems-panel">
+    <h2 class="problems-title">🛡️ Real Shopping Problems We Solve</h2>
+    <div class="problems-grid">
+      <div class="problem-item solved">✓ Fake &amp; misleading prices</div>
+      <div class="problem-item solved">✓ Hidden costs &amp; surprise charges</div>
+      <div class="problem-item solved">✓ Forced upselling beyond your budget</div>
+      <div class="problem-item solved">✓ Wrong accessories &amp; compatibility mistakes</div>
+      <div class="problem-item solved">✓ Unverified "80% OFF" fake discounts</div>
+      <div class="problem-item solved">✓ Too many irrelevant search results</div>
+      <div class="problem-item solved">✓ Manual Amazon vs Flipkart comparison</div>
+      <div class="problem-item solved">✓ Unexplained AI recommendations</div>
+      <div class="problem-item solved">✓ Sponsored results hiding the best option</div>
+      <div class="problem-item solved">✓ No way to monitor price drops</div>
+      <div class="problem-item solved">✓ ₹2 / ₹5 corrupt prices shown as real</div>
+      <div class="problem-item solved">✓ Repeating the same research every visit</div>
+    </div>
+  </section>
+
+  <section class="voice-card">
+    <button id="mic" class="mic" type="button" aria-label="Start voice search">🎙️</button>
+    <div id="status" class="status">Ready</div>
+    <div id="assistant">Try: "Best phone under ₹30,000 with good camera" or "bike under 2 lakh" or "Nike shoes under 5000".</div>
+    <div id="transcript" class="muted">Your request will appear here.</div>
+
+    <div class="type-row">
+      <input id="input" type="text" autocomplete="off"
+             placeholder="e.g. Samsung phone under 30000, bike under 2 lakh, Nike running shoes under 5000…"
+             aria-label="Search request">
+      <button id="send" type="button">Search</button>
+    </div>
+
+    <div id="flow" class="pill">No pipeline selected</div>
+    <div class="customer-rules">Hard budgets • No forced upselling • Honest data • Exact compatibility</div>
+
+    <!-- Conversational context -->
+    <div id="contextBar" class="context-bar hidden">
+      <span id="contextLabel">Refining previous search:</span>
+      <button id="clearContext" type="button" class="secondary small">New search</button>
+    </div>
+  </section>
+
+  <section class="panel">
+    <div class="head">
+      <h2>Recent searches</h2>
+      <button id="clear" type="button" class="secondary">Clear</button>
+    </div>
+    <div id="history"></div>
+  </section>
+
+  <!-- Price Watch Panel -->
+  <section class="panel watchlist-panel" id="watchlistPanel" style="display:none">
+    <div class="head">
+      <h2>⏰ Price Watch</h2>
+      <button id="clearWatch" type="button" class="secondary">Clear all</button>
+    </div>
+    <div id="watchlist"></div>
+  </section>
+
+  <section class="section-title">
+    <h2 id="title">Results</h2>
+    <div id="results" class="grid"></div>
+  </section>
+
+  <section id="cart" class="panel cart"></section>
+
+  <p class="note">
+    Bikes → BikeWale live scraping. Cars → CarDekho live scraping. Mobiles → Amazon India + Flipkart via SerpAPI Google Shopping.
+    General products (shoes, laptops, electronics, etc.) → SerpAPI Google Shopping.
+    Prices are validated against category-specific minimum/maximum bounds. Corrupt prices (₹2, ₹5, ₹49) are rejected.
+    If a live source fails, the system reports it clearly — it never silently shows fake prices as live.
+  </p>
+</div>
+
+<script src="app.js?v=20260905-v6"></script>
+</body>
+</html>

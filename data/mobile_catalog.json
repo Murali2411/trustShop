@@ -1,0 +1,12 @@
+[
+	{"id":"m1","category":"mobile","brand":"Samsung","name":"Samsung Galaxy S25","model":"Galaxy S25","price":79999,"storage_gb":256,"source":"Local demo catalog","price_type":"demo catalog price"},
+	{"id":"m2","category":"mobile","brand":"OnePlus","name":"OnePlus 13","model":"OnePlus 13","price":69999,"storage_gb":256,"source":"Local demo catalog","price_type":"demo catalog price"},
+	{"id":"m3","category":"mobile","brand":"Motorola","name":"Motorola Edge 60 Pro","model":"Edge 60 Pro","price":29999,"storage_gb":256,"source":"Local demo catalog","price_type":"demo catalog price"},
+	{"id":"m4","category":"mobile","brand":"Samsung","name":"Samsung Galaxy A35 5G","model":"Galaxy A35 5G","price":27999,"storage_gb":128,"source":"Local demo catalog","price_type":"demo catalog price"},
+	{"id":"m5","category":"mobile","brand":"Samsung","name":"Samsung Galaxy A25 5G","model":"Galaxy A25 5G","price":19999,"storage_gb":128,"source":"Local demo catalog","price_type":"demo catalog price"},
+	{"id":"m6","category":"mobile","brand":"OnePlus","name":"OnePlus Nord CE 4","model":"Nord CE 4","price":24999,"storage_gb":128,"source":"Local demo catalog","price_type":"demo catalog price"},
+	{"id":"m7","category":"mobile","brand":"Apple","name":"iPhone 15","model":"iPhone 15","price":59999,"storage_gb":128,"source":"Local demo catalog","price_type":"demo catalog price"},
+	{"id":"m8","category":"mobile","brand":"Xiaomi","name":"Redmi Note 14 5G","model":"Redmi Note 14 5G","price":18999,"storage_gb":128,"source":"Local demo catalog","price_type":"demo catalog price"},
+	{"id":"m9","category":"mobile","brand":"Realme","name":"Realme 13 Pro 5G","model":"13 Pro 5G","price":26999,"storage_gb":256,"source":"Local demo catalog","price_type":"demo catalog price"},
+	{"id":"m10","category":"mobile","brand":"Vivo","name":"Vivo T4 5G","model":"T4 5G","price":24999,"storage_gb":128,"source":"Local demo catalog","price_type":"demo catalog price"}
+]

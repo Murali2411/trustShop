@@ -1,0 +1,290 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Checkout — TrustShop</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+<div class="app">
+  <header class="topbar">
+    <div class="brand">Trust<span>Shop</span></div>
+    <a href="index.html" class="secondary" style="text-decoration:none;padding:8px 16px;border:1px solid var(--border);border-radius:999px;font-size:13px;color:var(--accent2)">← Back to search</a>
+  </header>
+
+  <!-- Order Summary -->
+  <div class="panel">
+    <h1>Order Summary</h1>
+    <div id="summary"></div>
+  </div>
+
+  <!-- Trust indicators -->
+  <div class="panel trust-checkout-panel">
+    <h3>🛡️ Checkout Trust Indicators</h3>
+    <div class="trust-checkout-grid">
+      <div class="trust-checkout-item">✓ Prices shown are from live sources</div>
+      <div class="trust-checkout-item">✓ Payment secured by Razorpay</div>
+      <div class="trust-checkout-item">✓ No hidden charges added</div>
+      <div class="trust-checkout-item">✓ Budget-protected — total is what you approved</div>
+    </div>
+    <p class="muted" style="margin-top:12px;font-size:13px">
+      ⚠ Note: Live prices can change between search and checkout. The final price will be confirmed on the seller's platform.
+    </p>
+  </div>
+
+  <!-- Delivery + Payment -->
+  <div class="panel" id="checkoutForm">
+    <h2>Delivery Details</h2>
+    <div class="form-group">
+      <label for="name">Full Name</label>
+      <input type="text" id="name" placeholder="Your full name" class="form-input">
+    </div>
+    <div class="form-group">
+      <label for="email">Email</label>
+      <input type="email" id="email" placeholder="your@email.com" class="form-input">
+    </div>
+    <div class="form-group">
+      <label for="phone">Phone</label>
+      <input type="tel" id="phone" placeholder="10-digit mobile number" class="form-input">
+    </div>
+    <div class="form-group">
+      <label for="address">Delivery Address</label>
+      <textarea id="address" placeholder="Full delivery address including PIN code…" class="form-input" rows="4"></textarea>
+    </div>
+
+    <p id="msg" class="muted" style="margin-top:16px"></p>
+
+    <div class="actions" style="margin-top:24px">
+      <button id="payBtn" type="button" class="checkout-btn" onclick="initiatePayment()">
+        Pay with Razorpay
+      </button>
+    </div>
+
+    <p class="muted" style="margin-top:16px;font-size:13px">
+      Payments are processed securely by Razorpay. Your card/UPI details are never stored on our servers.
+    </p>
+  </div>
+
+  <!-- Order success -->
+  <div id="successPanel" class="panel" style="display:none">
+    <div style="text-align:center;padding:20px 0">
+      <div style="font-size:64px;margin-bottom:16px">✅</div>
+      <h2>Payment Successful!</h2>
+      <p class="muted" id="successDetails"></p>
+      <div id="orderStatus" class="order-status-track">
+        <div class="status-step active">Payment received</div>
+        <div class="status-step">Order confirmed</div>
+        <div class="status-step">Processing</div>
+        <div class="status-step">Shipped</div>
+        <div class="status-step">Delivered</div>
+      </div>
+      <a href="index.html" class="checkout-btn" style="display:inline-block;margin-top:24px;text-decoration:none">Continue Shopping</a>
+    </div>
+  </div>
+
+  <!-- Payment failed -->
+  <div id="failPanel" class="panel" style="display:none">
+    <div style="text-align:center;padding:20px 0">
+      <div style="font-size:64px;margin-bottom:16px">❌</div>
+      <h2>Payment Failed</h2>
+      <p class="muted" id="failDetails">Your payment was not processed. You have not been charged.</p>
+      <button type="button" class="checkout-btn" onclick="resetPayment()">Try Again</button>
+    </div>
+  </div>
+</div>
+
+<script src="https://checkout.razorpay.com/v1/checkout.js"></script>
+<script>
+(function () {
+  var API = "http://127.0.0.1:8003";
+
+  // Load cart
+  var raw;
+  try { raw = JSON.parse(localStorage.getItem("rz_cart") || '{"items":[]}'); }
+  catch (_) { raw = { items: [] }; }
+  var items = Array.isArray(raw.items) ? raw.items : [];
+
+  var totalINR = items.reduce(function (s, x) {
+    var price = Number(x.price) || 0;
+    return s + price * (Number(x.qty) || 1);
+  }, 0);
+
+  var fmt = function (n) {
+    if (!isFinite(n) || n <= 0) return "Price unavailable";
+    return new Intl.NumberFormat("en-IN", { style: "currency", currency: "INR", maximumFractionDigits: 0 }).format(n);
+  };
+
+  var esc = function (s) {
+    return String(s == null ? "" : s).replace(/[&<>"']/g, function (c) {
+      return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c];
+    });
+  };
+
+  var summaryEl = document.getElementById("summary");
+
+  if (!items.length) {
+    summaryEl.innerHTML = '<p class="muted">Your cart is empty. <a href="index.html" style="color:var(--accent2)">Go back and search for products.</a></p>';
+    document.getElementById("checkoutForm").style.display = "none";
+    return;
+  }
+
+  var rows = items.map(function (x) {
+    var price = Number(x.price) || 0;
+    var lineTotal = price * (Number(x.qty) || 1);
+    return '<div class="row"><span>' + esc(x.name) + " × " + (x.qty || 1) + " <small class='muted'>(" + esc(x.source || "live search") + ")</small></span><b>" + fmt(lineTotal) + "</b></div>";
+  }).join("");
+
+  summaryEl.innerHTML = rows +
+    "<hr>" +
+    '<div class="row cart-total"><b>Total</b><b>' + (totalINR > 0 ? fmt(totalINR) : "Prices unavailable") + "</b></div>" +
+    (totalINR > 0 ? '<p class="muted" style="font-size:13px;margin-top:8px">No additional charges. This is the exact total from your cart.</p>' : "");
+
+  window.initiatePayment = async function () {
+    var name = (document.getElementById("name").value || "").trim();
+    var email = (document.getElementById("email").value || "").trim();
+    var phone = (document.getElementById("phone").value || "").trim();
+    var address = (document.getElementById("address").value || "").trim();
+    var msg = document.getElementById("msg");
+
+    if (!name) { msg.style.color = "var(--danger)"; msg.textContent = "Please enter your name."; return; }
+    if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) { msg.style.color = "var(--danger)"; msg.textContent = "Please enter a valid email."; return; }
+    if (!phone || !/^\d{10}$/.test(phone.replace(/\s/g, ""))) { msg.style.color = "var(--danger)"; msg.textContent = "Please enter a valid 10-digit phone number."; return; }
+    if (!address) { msg.style.color = "var(--danger)"; msg.textContent = "Please enter your delivery address."; return; }
+
+    if (totalINR <= 0) { msg.style.color = "var(--danger)"; msg.textContent = "No valid prices in cart. Go back and search for products."; return; }
+
+    msg.style.color = "var(--muted)";
+    msg.textContent = "Creating order…";
+    document.getElementById("payBtn").disabled = true;
+
+    // Create order on backend
+    var orderResp;
+    try {
+      orderResp = await fetch(API + "/api/orders", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          amount: Math.round(totalINR * 100), // paise
+          currency: "INR",
+          receipt: "trustshop_" + Date.now(),
+          notes: { customer_name: name, delivery_address: address.slice(0, 256) }
+        })
+      });
+    } catch (err) {
+      msg.style.color = "var(--danger)";
+      msg.textContent = "Could not reach the backend. Check that the FastAPI server is running.";
+      document.getElementById("payBtn").disabled = false;
+      return;
+    }
+
+    if (!orderResp.ok) {
+      msg.style.color = "var(--danger)";
+      msg.textContent = "Order creation failed (HTTP " + orderResp.status + "). Check backend logs.";
+      document.getElementById("payBtn").disabled = false;
+      return;
+    }
+
+    var order = await orderResp.json();
+    msg.textContent = "";
+
+    if (order.demo) {
+      // Demo mode — simulate Razorpay UX without a real key
+      document.getElementById("checkoutForm").style.display = "none";
+      document.getElementById("successPanel").style.display = "";
+      document.getElementById("successDetails").innerHTML =
+        "<b>Demo Order</b> — Razorpay keys not configured in <code>.env</code>.<br>" +
+        "Order ID: " + esc(order.id) + "<br>" +
+        "Amount: " + fmt(totalINR) + "<br>" +
+        "<span style='color:var(--warn)'>To enable real payments, add RAZORPAY_KEY_ID and RAZORPAY_KEY_SECRET to your .env file.</span>";
+      localStorage.removeItem("rz_cart");
+      return;
+    }
+
+    // Real Razorpay Checkout
+    var options = {
+      key: order.key_id || "", // key_id comes from order response if we add it, else fetched from health
+      amount: order.amount,
+      currency: order.currency,
+      name: "TrustShop",
+      description: "AI-verified purchase — " + items.length + " item(s)",
+      order_id: order.id,
+      prefill: { name: name, email: email, contact: phone.replace(/\s/g, "") },
+      notes: { delivery_address: address.slice(0, 256) },
+      theme: { color: "#7357ff" },
+      handler: async function (response) {
+        // Verify on backend
+        try {
+          var verifyResp = await fetch(API + "/api/verify", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              razorpay_order_id: response.razorpay_order_id,
+              razorpay_payment_id: response.razorpay_payment_id,
+              razorpay_signature: response.razorpay_signature,
+            })
+          });
+          var result = await verifyResp.json();
+          if (verifyResp.ok && result.verified) {
+            document.getElementById("checkoutForm").style.display = "none";
+            document.getElementById("successPanel").style.display = "";
+            document.getElementById("successDetails").innerHTML =
+              "Payment ID: <b>" + esc(response.razorpay_payment_id) + "</b><br>" +
+              "Order ID: " + esc(response.razorpay_order_id) + "<br>" +
+              "Amount: " + fmt(totalINR);
+            localStorage.removeItem("rz_cart");
+          } else {
+            throw new Error("Verification failed");
+          }
+        } catch (e) {
+          document.getElementById("checkoutForm").style.display = "none";
+          document.getElementById("failPanel").style.display = "";
+          document.getElementById("failDetails").textContent =
+            "Payment received but verification failed. Contact support with Payment ID: " + response.razorpay_payment_id;
+        }
+      },
+      modal: {
+        ondismiss: function () {
+          document.getElementById("payBtn").disabled = false;
+          msg.style.color = "var(--muted)";
+          msg.textContent = "Payment cancelled. You were not charged.";
+        }
+      }
+    };
+
+    // Inject the key_id from health endpoint if not on order
+    if (!options.key) {
+      try {
+        var h = await fetch(API + "/api/health", { cache: "no-store" });
+        var hd = await h.json();
+        options.key = hd.razorpay_key_id || "";
+      } catch (_) {}
+    }
+
+    if (!options.key) {
+      msg.style.color = "var(--danger)";
+      msg.textContent = "Razorpay key not configured. Add RAZORPAY_KEY_ID to .env.";
+      document.getElementById("payBtn").disabled = false;
+      return;
+    }
+
+    var rzp = new Razorpay(options);
+    rzp.on("payment.failed", function (response) {
+      document.getElementById("checkoutForm").style.display = "none";
+      document.getElementById("failPanel").style.display = "";
+      document.getElementById("failDetails").textContent =
+        "Payment failed: " + (response.error && response.error.description || "Unknown error") +
+        ". You have not been charged.";
+    });
+    rzp.open();
+  };
+
+  window.resetPayment = function () {
+    document.getElementById("failPanel").style.display = "none";
+    document.getElementById("checkoutForm").style.display = "";
+    document.getElementById("payBtn").disabled = false;
+  };
+}());
+</script>
+</body>
+</html>
