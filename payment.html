@@ -95,36 +95,59 @@
     .trust-checkout-item::before { content: "✓"; font-size: 14px; font-weight: 900; }
 
     /* Form */
-    .form-card { background: var(--panel); border: 1px solid var(--border-s); border-radius: var(--radius); overflow: hidden; margin-bottom: 16px; }
+    .form-card {
+      background: var(--panel);
+      border: 1.5px solid var(--border-s);
+      border-radius: var(--radius); overflow: hidden; margin-bottom: 16px;
+      box-shadow: 0 4px 32px rgba(0,0,0,0.28);
+    }
     .form-card-header {
-      padding: 18px 24px; border-bottom: 1px solid var(--border);
-      background: linear-gradient(135deg, rgba(139,92,246,0.05), transparent);
+      padding: 20px 24px; border-bottom: 1.5px solid var(--border-s);
+      background: linear-gradient(135deg, rgba(139,92,246,0.10), rgba(16,185,129,0.04));
+      position: relative; overflow: hidden;
     }
-    .form-card-header h2 { font-size: 16px; font-weight: 800; color: var(--text); }
-    .form-card-body { padding: 24px; display: flex; flex-direction: column; gap: 18px; }
+    .form-card-header::before {
+      content: ''; position: absolute; top: 0; left: 0; right: 0;
+      height: 3px; background: linear-gradient(90deg, #8b5cf6, #c084fc, #10b981);
+    }
+    .form-card-header h2 { font-size: 17px; font-weight: 800; color: var(--text); margin-top: 6px; }
+    .form-card-header p { font-size: 12px; color: var(--muted); margin-top: 3px; }
+    .form-card-body { padding: 24px; display: flex; flex-direction: column; gap: 20px; }
     .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
-    .form-group { display: flex; flex-direction: column; gap: 7px; }
+    .form-group { display: flex; flex-direction: column; gap: 8px; }
     .form-label {
-      font-size: 12px; font-weight: 700; color: var(--text-2);
-      letter-spacing: 0.04em; text-transform: uppercase;
+      font-size: 11px; font-weight: 800; color: var(--text-2);
+      letter-spacing: 0.08em; text-transform: uppercase;
+      display: flex; align-items: center; gap: 6px;
     }
+    .form-label-icon { font-size: 14px; }
     .form-input {
-      width: 100%; padding: 13px 16px;
-      background: rgba(255,255,255,0.04);
+      width: 100%; padding: 14px 16px;
+      background: rgba(255,255,255,0.08);
       color: var(--text);
-      border: 1px solid var(--border-s);
+      border: 1.5px solid rgba(255,255,255,0.20);
       border-radius: var(--radius-sm);
-      font-size: 14px; font-family: inherit;
+      font-size: 14px; font-weight: 500; font-family: inherit;
       outline: none; resize: vertical;
-      transition: border-color var(--transition-f), box-shadow var(--transition-f);
+      transition: border-color 0.2s ease, box-shadow 0.2s ease, background 0.2s ease;
     }
-    [data-theme="light"] .form-input { background: rgba(255,255,255,0.9); }
+    [data-theme="light"] .form-input {
+      background: rgba(255,255,255,0.95);
+      border-color: rgba(0,0,60,0.20);
+      color: #16162a;
+    }
     .form-input:focus {
       border-color: var(--accent);
-      box-shadow: var(--shadow-sel);
+      background: rgba(139,92,246,0.05);
+      box-shadow: 0 0 0 3px rgba(139,92,246,0.18), 0 0 24px rgba(139,92,246,0.12);
     }
-    .form-input::placeholder { color: var(--muted); }
-    .form-input.error { border-color: var(--danger); box-shadow: 0 0 0 3px rgba(244,63,94,0.18); }
+    [data-theme="light"] .form-input:focus { background: #fff; }
+    .form-input::placeholder { color: var(--muted); opacity: 0.8; }
+    .form-input.error {
+      border-color: var(--danger);
+      box-shadow: 0 0 0 3px rgba(244,63,94,0.18);
+      background: rgba(244,63,94,0.04);
+    }
 
     /* Pay button */
     .pay-btn-wrap { padding: 0 24px 24px; }
@@ -285,25 +308,28 @@
 
   <!-- Delivery + Payment Form -->
   <div class="form-card" id="checkoutForm">
-    <div class="form-card-header"><h2>📦 Delivery Details</h2></div>
+    <div class="form-card-header">
+      <h2>📦 Delivery Details</h2>
+      <p>Fill in your details to proceed to secure payment</p>
+    </div>
     <div class="form-card-body">
       <div class="form-row">
         <div class="form-group">
-          <label class="form-label" for="name">Full Name *</label>
-          <input type="text" id="name" class="form-input" placeholder="Your full name" autocomplete="name">
+          <label class="form-label" for="name"><span class="form-label-icon">👤</span> Full Name *</label>
+          <input type="text" id="name" class="form-input" placeholder="e.g. Rahul Sharma" autocomplete="name">
         </div>
         <div class="form-group">
-          <label class="form-label" for="phone">Phone *</label>
-          <input type="tel" id="phone" class="form-input" placeholder="10-digit number" autocomplete="tel">
+          <label class="form-label" for="phone"><span class="form-label-icon">📱</span> Phone *</label>
+          <input type="tel" id="phone" class="form-input" placeholder="10-digit mobile number" autocomplete="tel">
         </div>
       </div>
       <div class="form-group">
-        <label class="form-label" for="email">Email *</label>
-        <input type="email" id="email" class="form-input" placeholder="you@email.com" autocomplete="email">
+        <label class="form-label" for="email"><span class="form-label-icon">✉️</span> Email Address *</label>
+        <input type="email" id="email" class="form-input" placeholder="e.g. rahul@email.com" autocomplete="email">
       </div>
       <div class="form-group">
-        <label class="form-label" for="address">Delivery Address *</label>
-        <textarea id="address" class="form-input" placeholder="Full address including flat no., area, city, state and PIN code…" rows="4" autocomplete="street-address"></textarea>
+        <label class="form-label" for="address"><span class="form-label-icon">📍</span> Delivery Address *</label>
+        <textarea id="address" class="form-input" placeholder="Flat / House no., Street, Area, City, State — PIN code" rows="3" autocomplete="street-address"></textarea>
       </div>
     </div>
     <p id="msg"></p>

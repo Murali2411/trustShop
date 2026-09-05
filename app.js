@@ -879,18 +879,23 @@ function renderCart() {
           category: "accessory",
           compatible_model: product.name,
         }) - 1;
+        // Fallback search URL so every card always has an action
+        const searchQ = encodeURIComponent(accessory.name + " " + product.name);
+        const fallbackUrl = `https://www.amazon.in/s?k=${searchQ}`;
+        const viewUrl = accessory.source_url || fallbackUrl;
+
         return `<div class="acc-card">
           ${accessory.image ? `<img class="acc-img" src="${esc(accessory.image)}" alt="${esc(accessory.name)}" loading="lazy">` : `<div class="acc-img-placeholder">${esc(group.icon)}</div>`}
           <div class="acc-info">
             <p class="acc-name">${esc(accessory.name)}</p>
             ${accessory.reason ? `<p class="acc-reason muted">${esc(accessory.reason)}</p>` : ""}
             <div class="acc-footer">
-              <span class="acc-price">${hasPrice ? money(accessory.price) : '<span class="muted">See price</span>'}</span>
-              <span class="acc-badge ${isLive ? "live" : "demo"}">${isLive ? "LIVE" : "Suggestion"}</span>
+              <span class="acc-price">${hasPrice ? money(accessory.price) : '<span style="font-size:11px;color:var(--muted)">Check price ↗</span>'}</span>
+              <span class="acc-badge ${isLive ? "live" : "demo"}">${isLive ? "LIVE" : "Curated"}</span>
             </div>
             <div class="acc-actions">
-              ${hasPrice ? `<button type="button" class="acc-add-btn" data-add-accessory="${idx}">+ Add</button>` : ""}
-              ${accessory.source_url ? `<a href="${esc(accessory.source_url)}" target="_blank" rel="noopener noreferrer" class="acc-view-link">View ↗</a>` : ""}
+              ${hasPrice ? `<button type="button" class="acc-add-btn" data-add-accessory="${idx}">+ Add to Cart</button>` : `<a href="${esc(viewUrl)}" target="_blank" rel="noopener noreferrer" class="acc-add-btn" style="text-decoration:none;display:flex;align-items:center;justify-content:center;font-size:11px">Shop Now ↗</a>`}
+              ${hasPrice ? `<a href="${esc(viewUrl)}" target="_blank" rel="noopener noreferrer" class="acc-view-link">Find ↗</a>` : ""}
             </div>
           </div>
         </div>`;
