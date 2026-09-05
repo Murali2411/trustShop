@@ -31,6 +31,7 @@ let lastResults = [];
 let currentSearch = null;          // { category, query (raw text), params }
 let sessionContext = null;         // conversational context — refined across queries
 const mobileRecommendations = {};
+const vehicleRecommendations = {};
 const recommendationLoads = {};
 let listening = false;
 let recognition = null;
@@ -735,6 +736,7 @@ function addToCart(product) {
   saveCart(cart);
   renderCart();
   if (product.category === "mobile") loadMobileRecommendations(product);
+  if (product.category === "bike" || product.category === "car") loadVehicleRecommendations(product);
   setAssistant(`${product.name} added to cart.`);
 }
 
@@ -754,12 +756,24 @@ function updateQty(productId, delta) {
   renderCart();
 }
 
+// Extract a clean "Brand Model" string from a full product title
+// e.g. "Samsung Galaxy A55 5G (Iceblue, 8GB, 128GB)" → "Samsung Galaxy A55"
+function extractMobileModel(name) {
+  if (!name) return name;
+  // Strip common suffixes in parentheses
+  let m = name.replace(/\s*\(.*?\)\s*/g, " ").trim();
+  // Keep only the first 4 tokens (Brand + up to 3 model words)
+  const tokens = m.split(/\s+/).slice(0, 4);
+  return tokens.join(" ");
+}
+
 async function loadMobileRecommendations(product) {
   const key = product.id || product.name;
   if (!key || recommendationLoads[key]) return;
   recommendationLoads[key] = true;
   try {
-    const params = new URLSearchParams({ category: "mobile", model: product.name || "" });
+    const cleanModel = extractMobileModel(product.name || "");
+    const params = new URLSearchParams({ category: "mobile", model: cleanModel });
     const response = await fetch(`${API}/api/addons?${params.toString()}`, { cache: "no-store" });
     if (!response.ok) throw new Error(`HTTP ${response.status}`);
     const data = await response.json();
@@ -768,6 +782,25 @@ async function loadMobileRecommendations(product) {
     renderCart();
   } catch (_) {
     delete recommendationLoads[key];
+  }
+}
+
+async function loadVehicleRecommendations(product) {
+  const key = product.id || product.name;
+  if (!key || recommendationLoads["v:" + key]) return;
+  recommendationLoads["v:" + key] = true;
+  // Return immediately if already cached
+  if (vehicleRecommendations[key]) return;
+  try {
+    const params = new URLSearchParams({ category: product.category, model: product.name || "" });
+    const response = await fetch(`${API}/api/addons?${params.toString()}`, { cache: "no-store" });
+    if (!response.ok) throw new Error(`HTTP ${response.status}`);
+    const data = await response.json();
+    const items = Array.isArray(data.items) ? data.items : [];
+    if (items.length) vehicleRecommendations[key] = { product, items };
+    renderCart();
+  } catch (_) {
+    delete recommendationLoads["v:" + key];
   }
 }
 
@@ -782,72 +815,96 @@ function renderCart() {
   const accessoryChoices = [];
 
   const ACC_ICONS = {
+    // Mobile
     case: "📱", screen_protector: "🛡️", charger: "⚡", earphones: "🎧",
-    helmet: "🪖", cover: "🏍️", gloves: "🧤", camera: "📷",
-    organiser: "🧳", other: "🔌",
+    // Bike
+    helmet: "🪖", gloves: "🧤", jacket: "🧥", boots: "👢",
+    cover: "🏍️", lock: "🔒", bag: "🎒", guard: "🛡️",
+    mirrors: "🔭", mount: "📍", grips: "✊", tools: "🔧",
+    // Car
+    seat: "💺", mat: "🟫", steering: "🎡", fragrance: "🌸",
+    organiser: "🧳", camera: "📷", sunshade: "☀️", tpms: "🔔",
+    emergency: "🆘",
+    other: "🔌",
   };
 
-  // Build Flipkart-style "Frequently Bought Together" sections per mobile product
-  const recsHTML = items
+  // ── Shared helper: build a FBT section from a rec object ───────────────────
+  function buildFBTSection(product, rec, emoji, titleLabel) {
+    if (!rec || !rec.items || !rec.items.length) return "";
+    const key = product.id || product.name;
+
+    const byType = {};
+    for (const acc of rec.items) {
+      const tk = acc.type_key || "other";
+      const icon = ACC_ICONS[acc.type_icon] || ACC_ICONS[tk] || "🔌";
+      if (!byType[tk]) byType[tk] = { label: acc.type || tk, icon, items: [] };
+      byType[tk].items.push(acc);
+    }
+
+    const typeBlocks = Object.values(byType).map(group => {
+      const cards = group.items.map(accessory => {
+        const hasPrice = accessory.price && Number(accessory.price) > 0;
+        const isLive = accessory.live === true;
+        const idx = accessoryChoices.push({
+          ...accessory,
+          id: `accessory:${key}:${accessory.name}`,
+          category: "accessory",
+          compatible_model: product.name,
+        }) - 1;
+        return `<div class="acc-card">
+          ${accessory.image ? `<img class="acc-img" src="${esc(accessory.image)}" alt="${esc(accessory.name)}" loading="lazy">` : `<div class="acc-img-placeholder">${esc(group.icon)}</div>`}
+          <div class="acc-info">
+            <p class="acc-name">${esc(accessory.name)}</p>
+            ${accessory.reason ? `<p class="acc-reason muted">${esc(accessory.reason)}</p>` : ""}
+            <div class="acc-footer">
+              <span class="acc-price">${hasPrice ? money(accessory.price) : '<span class="muted">See price</span>'}</span>
+              <span class="acc-badge ${isLive ? "live" : "demo"}">${isLive ? "LIVE" : "Suggestion"}</span>
+            </div>
+            <div class="acc-actions">
+              ${hasPrice ? `<button type="button" class="acc-add-btn" data-add-accessory="${idx}">+ Add</button>` : ""}
+              ${accessory.source_url ? `<a href="${esc(accessory.source_url)}" target="_blank" rel="noopener noreferrer" class="acc-view-link">View ↗</a>` : ""}
+            </div>
+          </div>
+        </div>`;
+      }).join("");
+      return `<div class="acc-type-group">
+        <h4 class="acc-type-label">${esc(group.icon)} ${esc(group.label)}</h4>
+        <div class="acc-type-cards">${cards}</div>
+      </div>`;
+    }).join("");
+
+    if (!typeBlocks) return "";
+    const hasLive = rec.items.some(x => x.live === true);
+    return `<section class="panel recommendations fbt-panel">
+      <div class="fbt-header">
+        <span class="fbt-title">${emoji} ${esc(titleLabel)}</span>
+        <span class="fbt-subtitle">For your ${esc(product.name)}</span>
+        ${hasLive ? '<span class="fbt-live-badge">LIVE prices</span>' : '<span class="fbt-live-badge" style="background:var(--panel2);color:var(--muted)">Curated picks</span>'}
+      </div>
+      <p class="muted compat-note">✓ Recommended for ${esc(product.name)}</p>
+      <div class="acc-types-container">${typeBlocks}</div>
+    </section>`;
+  }
+
+  // ── Mobile FBT — live SerpAPI accessories per phone model ───────────────────
+  const mobileFBT = items
     .filter(x => x.category === "mobile")
     .map(product => {
       const key = product.id || product.name;
-      const rec = mobileRecommendations[key];
-      if (!rec || !rec.items || !rec.items.length) return "";
-
-      // Group accessories by type_key
-      const byType = {};
-      for (const acc of rec.items) {
-        const tk = acc.type_key || "other";
-        const icon = ACC_ICONS[acc.type_icon] || ACC_ICONS[tk] || "🔌";
-        if (!byType[tk]) byType[tk] = { label: acc.type || tk, icon, items: [] };
-        byType[tk].items.push(acc);
-      }
-
-      const typeBlocks = Object.values(byType).map(group => {
-        const cards = group.items.map(accessory => {
-          const hasPrice = accessory.price && Number(accessory.price) > 0;
-          const isLive = accessory.live === true;
-          const idx = accessoryChoices.push({
-            ...accessory,
-            id: `accessory:${key}:${accessory.name}`,
-            category: "accessory",
-            compatible_model: product.name,
-          }) - 1;
-          return `<div class="acc-card">
-            ${accessory.image ? `<img class="acc-img" src="${esc(accessory.image)}" alt="${esc(accessory.name)}" loading="lazy">` : `<div class="acc-img-placeholder">${esc(group.icon)}</div>`}
-            <div class="acc-info">
-              <p class="acc-name">${esc(accessory.name)}</p>
-              ${accessory.reason ? `<p class="acc-reason muted">${esc(accessory.reason)}</p>` : ""}
-              <div class="acc-footer">
-                <span class="acc-price">${hasPrice ? money(accessory.price) : '<span class="muted">See price</span>'}</span>
-                <span class="acc-badge ${isLive ? "live" : "demo"}">${isLive ? "LIVE" : "Suggestion"}</span>
-              </div>
-              <div class="acc-actions">
-                ${hasPrice ? `<button type="button" class="acc-add-btn" data-add-accessory="${idx}">+ Add</button>` : ""}
-                ${accessory.source_url ? `<a href="${esc(accessory.source_url)}" target="_blank" rel="noopener noreferrer" class="acc-view-link">View ↗</a>` : ""}
-              </div>
-            </div>
-          </div>`;
-        }).join("");
-        return `<div class="acc-type-group">
-          <h4 class="acc-type-label">${esc(group.icon)} ${esc(group.label)}</h4>
-          <div class="acc-type-cards">${cards}</div>
-        </div>`;
-      }).join("");
-
-      if (!typeBlocks) return "";
-      const hasLive = rec.items.some(x => x.live === true);
-      return `<section class="panel recommendations fbt-panel">
-        <div class="fbt-header">
-          <span class="fbt-title">🛒 Frequently Bought Together</span>
-          <span class="fbt-subtitle">Accessories for ${esc(product.name)}</span>
-          ${hasLive ? '<span class="fbt-live-badge">LIVE prices</span>' : ''}
-        </div>
-        <p class="muted compat-note">✓ Verified compatible with your ${esc(product.name)}.</p>
-        <div class="acc-types-container">${typeBlocks}</div>
-      </section>`;
+      return buildFBTSection(product, mobileRecommendations[key], "🛒", "Frequently Bought Together");
     }).join("");
+
+  // ── Vehicle FBT — curated real-world accessories per bike/car ───────────────
+  const vehicleFBT = items
+    .filter(x => x.category === "bike" || x.category === "car")
+    .map(product => {
+      const key = product.id || product.name;
+      const emoji = product.category === "bike" ? "🏍️" : "🚗";
+      const label = product.category === "bike" ? "Essential Bike Accessories" : "Must-Have Car Accessories";
+      return buildFBTSection(product, vehicleRecommendations[key], emoji, label);
+    }).join("");
+
+  const recsHTML = mobileFBT + vehicleFBT;
 
   $("cart").innerHTML = `
     <h2>Cart <span class="pill">${items.length} item(s)</span></h2>
@@ -991,6 +1048,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
   const cartItems = getCart().items;
   cartItems.filter(x => x.category === "mobile").forEach(loadMobileRecommendations);
+  cartItems.filter(x => x.category === "bike" || x.category === "car").forEach(loadVehicleRecommendations);
 
   checkBackend();
   initVoice();

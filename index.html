@@ -1,31 +1,61 @@
 <!doctype html>
-<html lang="en">
+<html lang="en" data-theme="dark">
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>TrustShop — AI Shopping Agent</title>
   <meta name="description" content="AI shopping agent that finds products across the web, verifies prices, protects your budget, checks compatibility, and helps you make a trustworthy purchase decision.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:ital,wght@0,400;0,500;0,600;0,700;0,800;1,400&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="styles.css">
 </head>
 <body>
+
+<!-- Animated background -->
+<div class="bg-canvas" aria-hidden="true">
+  <div class="orb orb-1"></div>
+  <div class="orb orb-2"></div>
+  <div class="orb orb-3"></div>
+  <div class="orb orb-4"></div>
+  <div class="grid-overlay"></div>
+</div>
+
 <div class="app">
+
   <header class="topbar">
-    <div class="brand">Trust<span>Shop</span> <small class="brand-sub">by Razorpay Buildathon</small></div>
+    <div class="brand">
+      Trust<span>Shop</span>
+      <small class="brand-sub">by Razorpay Buildathon</small>
+    </div>
     <div class="topbar-right">
-      <div class="pill customer-first" title="Hard budgets · No forced upselling · Honest data · Exact compatibility">BUDGET PROTECTED</div>
+      <div class="pill customer-first" title="Hard budgets · No forced upselling · Honest data · Exact compatibility">
+        <span class="shield-icon">🛡</span> BUDGET PROTECTED
+      </div>
       <div id="backendStatus" class="backend-status">Connecting…</div>
+      <button id="themeToggle" class="theme-toggle" aria-label="Toggle dark/light mode" title="Toggle theme">🌙</button>
     </div>
   </header>
 
   <section class="hero">
-    <small>VOICE-FIRST AI SHOPPING AGENT • LIVE PRICES FROM AMAZON · FLIPKART · BIKEWALE · CARDEKHO</small>
-    <h1>Shopping with trust,<br>not just search.</h1>
-    <p>An AI agent that finds products, verifies prices, compares stores, protects your budget, and checks compatibility — so you can shop with confidence.</p>
+    <div class="hero-badge">✦ RAZORPAY BUILDATHON 2026 ✦</div>
+    <small class="hero-ticker">VOICE-FIRST AI SHOPPING AGENT &nbsp;·&nbsp; LIVE PRICES FROM AMAZON &nbsp;·&nbsp; FLIPKART &nbsp;·&nbsp; BIKEWALE &nbsp;·&nbsp; CARDEKHO</small>
+    <h1>Shopping with trust,<br><span class="gradient-text">not just search.</span></h1>
+    <p class="hero-desc">An AI agent that finds products, verifies prices, compares stores, protects your budget, and checks compatibility — so you can shop with confidence.</p>
+    <div class="hero-stats">
+      <div class="stat"><span class="stat-num">4</span><span class="stat-label">Live Sources</span></div>
+      <div class="stat-divider"></div>
+      <div class="stat"><span class="stat-num">AI</span><span class="stat-label">Match Scoring</span></div>
+      <div class="stat-divider"></div>
+      <div class="stat"><span class="stat-num">0%</span><span class="stat-label">Fake Prices</span></div>
+      <div class="stat-divider"></div>
+      <div class="stat"><span class="stat-num">₹0</span><span class="stat-label">Hidden Costs</span></div>
+    </div>
   </section>
 
-  <!-- Problems Solved Dashboard -->
+  <!-- Problems Solved -->
   <section class="panel problems-panel">
-    <h2 class="problems-title">🛡️ Real Shopping Problems We Solve</h2>
+    <h2 class="problems-title"><span class="problems-icon">🛡️</span> Real Shopping Problems We Solve</h2>
     <div class="problems-grid">
       <div class="problem-item solved">✓ Fake &amp; misleading prices</div>
       <div class="problem-item solved">✓ Hidden costs &amp; surprise charges</div>
@@ -42,29 +72,44 @@
     </div>
   </section>
 
+  <!-- Search -->
   <section class="voice-card">
-    <button id="mic" class="mic" type="button" aria-label="Start voice search">🎙️</button>
-    <div id="status" class="status">Ready</div>
-    <div id="assistant">Try: "Best phone under ₹30,000 with good camera" or "bike under 2 lakh" or "Nike shoes under 5000".</div>
-    <div id="transcript" class="muted">Your request will appear here.</div>
-
-    <div class="type-row">
-      <input id="input" type="text" autocomplete="off"
-             placeholder="e.g. Samsung phone under 30000, bike under 2 lakh, Nike running shoes under 5000…"
-             aria-label="Search request">
-      <button id="send" type="button">Search</button>
+    <div class="voice-top">
+      <button id="mic" class="mic" type="button" aria-label="Start voice search">🎙️</button>
+      <div class="voice-labels">
+        <div id="status" class="status">Ready to search</div>
+        <div id="assistant" class="assistant-text">Try: "Best phone under ₹30,000 with 5G" or "bike under 2 lakh 350cc" or "Nike shoes under 5000"</div>
+      </div>
     </div>
 
-    <div id="flow" class="pill">No pipeline selected</div>
-    <div class="customer-rules">Hard budgets • No forced upselling • Honest data • Exact compatibility</div>
+    <div id="transcript" class="muted transcript"></div>
 
-    <!-- Conversational context -->
+    <div class="type-row">
+      <div class="input-wrap">
+        <span class="input-icon">🔍</span>
+        <input id="input" type="text" autocomplete="off"
+               placeholder="e.g. Samsung phone under 30000, bike under 2 lakh, Nike running shoes under 5000…"
+               aria-label="Search request">
+      </div>
+      <button id="send" type="button">
+        <span>Search</span>
+        <span class="btn-arrow">→</span>
+      </button>
+    </div>
+
+    <div class="search-footer">
+      <div id="flow" class="pill flow-pill">No pipeline selected</div>
+      <div class="customer-rules">Hard budgets &nbsp;•&nbsp; No forced upselling &nbsp;•&nbsp; Honest data &nbsp;•&nbsp; Exact compatibility</div>
+    </div>
+
     <div id="contextBar" class="context-bar hidden">
+      <span class="context-icon">💬</span>
       <span id="contextLabel">Refining previous search:</span>
       <button id="clearContext" type="button" class="secondary small">New search</button>
     </div>
   </section>
 
+  <!-- History -->
   <section class="panel">
     <div class="head">
       <h2>Recent searches</h2>
@@ -73,7 +118,7 @@
     <div id="history"></div>
   </section>
 
-  <!-- Price Watch Panel -->
+  <!-- Price Watch -->
   <section class="panel watchlist-panel" id="watchlistPanel" style="display:none">
     <div class="head">
       <h2>⏰ Price Watch</h2>
@@ -82,21 +127,82 @@
     <div id="watchlist"></div>
   </section>
 
+  <!-- Results -->
   <section class="section-title">
     <h2 id="title">Results</h2>
     <div id="results" class="grid"></div>
   </section>
 
+  <!-- Cart -->
   <section id="cart" class="panel cart"></section>
 
   <p class="note">
-    Bikes → BikeWale live scraping. Cars → CarDekho live scraping. Mobiles → Amazon India + Flipkart via SerpAPI Google Shopping.
-    General products (shoes, laptops, electronics, etc.) → SerpAPI Google Shopping.
-    Prices are validated against category-specific minimum/maximum bounds. Corrupt prices (₹2, ₹5, ₹49) are rejected.
+    Bikes → BikeWale live scraping &nbsp;·&nbsp; Cars → CarDekho live scraping &nbsp;·&nbsp; Mobiles → Amazon India + Flipkart via SerpAPI Google Shopping &nbsp;·&nbsp;
+    General products → SerpAPI Google Shopping. Prices validated against category bounds. Corrupt prices (₹2, ₹5, ₹49) are rejected.
     If a live source fails, the system reports it clearly — it never silently shows fake prices as live.
   </p>
-</div>
 
-<script src="app.js?v=20260905-v6"></script>
+</div><!-- /.app -->
+
+<script src="app.js?v=20260905-v8"></script>
+<script>
+  // 3D mouse-tilt on product cards
+  (function () {
+    var MAX = 12; // max tilt degrees
+    function applyTilt(card, e) {
+      var r = card.getBoundingClientRect();
+      var cx = r.left + r.width / 2;
+      var cy = r.top + r.height / 2;
+      var dx = (e.clientX - cx) / (r.width / 2);
+      var dy = (e.clientY - cy) / (r.height / 2);
+      var rx = -dy * MAX;
+      var ry =  dx * MAX;
+      var scale = 1.035;
+      card.style.transform = 'perspective(1100px) rotateX(' + rx + 'deg) rotateY(' + ry + 'deg) scale3d(' + scale + ',' + scale + ',' + scale + ')';
+      card.classList.add('tilt-active');
+    }
+    function resetTilt(card) {
+      card.style.transform = '';
+      card.classList.remove('tilt-active');
+    }
+    function bindCards() {
+      document.querySelectorAll('.product').forEach(function (card) {
+        if (card._tiltBound) return;
+        card._tiltBound = true;
+        card.addEventListener('mousemove', function (e) { applyTilt(card, e); });
+        card.addEventListener('mouseleave', function () { resetTilt(card); });
+      });
+    }
+    // Bind now and after each search result renders via MutationObserver
+    bindCards();
+    var obs = new MutationObserver(bindCards);
+    obs.observe(document.getElementById('results') || document.body, { childList: true, subtree: true });
+  })();
+
+  // Theme toggle — runs after app.js so DOM is ready
+  (function () {
+    const btn = document.getElementById('themeToggle');
+    const root = document.documentElement;
+    const saved = localStorage.getItem('ts_theme') || 'dark';
+    if (saved === 'light') {
+      root.setAttribute('data-theme', 'light');
+      btn.textContent = '☀️';
+    } else {
+      root.setAttribute('data-theme', 'dark');
+    }
+    btn.addEventListener('click', function () {
+      const isLight = root.getAttribute('data-theme') === 'light';
+      if (isLight) {
+        root.setAttribute('data-theme', 'dark');
+        localStorage.setItem('ts_theme', 'dark');
+        btn.textContent = '🌙';
+      } else {
+        root.setAttribute('data-theme', 'light');
+        localStorage.setItem('ts_theme', 'light');
+        btn.textContent = '☀️';
+      }
+    });
+  })();
+</script>
 </body>
 </html>
