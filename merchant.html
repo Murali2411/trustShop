@@ -1,1 +1,238 @@
-<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Live Source</title><link rel="stylesheet" href="styles.css"></head><body><div class="app"><div class="panel"><small>LIVE SOURCE LISTING</small><h1 id="n">Vehicle</h1><p id="p" class="muted"></p><a id="s" target="_blank">Open source listing ↗</a> <a href="index.html">Back to agent</a></div></div><script>let p=JSON.parse(localStorage.getItem('rz_selected')||'null');if(p){n.textContent=p.name;document.getElementById('p').textContent=`${p.source} • ₹${Number(p.price).toLocaleString('en-IN')}`;s.href=p.source_url}</script></body></html>
+<!doctype html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Live Source — TrustShop</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+  <style>
+    .merchant-page { max-width: 720px; margin: 0 auto; padding: 0 0 80px; }
+
+    .product-hero {
+      border-radius: var(--radius); overflow: hidden;
+      border: 1px solid var(--border-s);
+      background: var(--panel);
+      backdrop-filter: blur(20px);
+      animation: card-enter 0.5s ease both;
+      margin: 28px 0 16px;
+    }
+    .product-hero-img {
+      width: 100%; height: 260px;
+      object-fit: contain;
+      background: var(--panel2);
+      padding: 24px;
+      border-bottom: 1px solid var(--border);
+    }
+    .product-hero-img-placeholder {
+      width: 100%; height: 260px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 80px; background: var(--panel2);
+      border-bottom: 1px solid var(--border);
+    }
+    .product-hero-body { padding: 28px; }
+
+    .product-category-badge {
+      display: inline-flex; align-items: center; gap: 6px;
+      font-size: 10px; font-weight: 800; letter-spacing: 0.10em;
+      text-transform: uppercase; padding: 4px 12px;
+      border-radius: 999px; border: 1px solid rgba(139,92,246,0.30);
+      background: rgba(139,92,246,0.10); color: var(--accent-v2);
+      margin-bottom: 14px;
+    }
+    .product-hero-name {
+      font-size: 26px; font-weight: 900; letter-spacing: -0.02em;
+      color: var(--text); line-height: 1.25; margin-bottom: 16px;
+    }
+    .product-hero-price {
+      font-size: 38px; font-weight: 900; letter-spacing: -0.03em;
+      background: var(--grad-hero); background-size: 200%;
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+      background-clip: text; animation: grad-shift 4s ease infinite;
+      margin-bottom: 20px; line-height: 1;
+    }
+    .product-hero-source {
+      display: flex; align-items: center; gap: 10px;
+      padding: 12px 16px; border-radius: var(--radius-sm);
+      border: 1px solid rgba(16,185,129,0.22);
+      background: rgba(16,185,129,0.06);
+      font-size: 13px; font-weight: 600; color: var(--accent-2);
+      margin-bottom: 20px;
+    }
+    .product-hero-source .src-icon { font-size: 16px; }
+    .product-hero-source a {
+      color: var(--accent-v2); font-weight: 700;
+      text-decoration: underline; margin-left: auto;
+    }
+    .product-hero-source a:hover { color: var(--accent); }
+
+    .product-hero-actions { display: flex; flex-wrap: wrap; gap: 12px; }
+    .btn-primary {
+      flex: 1; min-width: 180px;
+      padding: 14px 24px;
+      background: var(--grad-btn); color: #fff;
+      border: 0; border-radius: 14px;
+      font-size: 14px; font-weight: 800; font-family: inherit;
+      cursor: pointer; box-shadow: var(--shadow-btn);
+      transition: transform var(--transition), box-shadow var(--transition);
+      text-align: center; text-decoration: none;
+      display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+    }
+    .btn-primary:hover { transform: translateY(-2px); box-shadow: 0 8px 28px rgba(139,92,246,0.6); text-decoration: none; }
+    .btn-ghost {
+      flex: 1; min-width: 140px;
+      padding: 14px 24px;
+      background: transparent; color: var(--text-2);
+      border: 1px solid var(--border-s); border-radius: 14px;
+      font-size: 14px; font-weight: 700; font-family: inherit;
+      cursor: pointer; transition: all var(--transition);
+      text-align: center; text-decoration: none;
+      display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+    }
+    .btn-ghost:hover { border-color: var(--accent); color: var(--accent-v2); background: rgba(139,92,246,0.08); text-decoration: none; }
+
+    .info-grid {
+      display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+      gap: 12px; margin-top: 16px;
+    }
+    .info-tile {
+      padding: 14px 16px; border-radius: var(--radius-sm);
+      border: 1px solid var(--border); background: var(--panel2);
+      display: flex; flex-direction: column; gap: 4px;
+    }
+    .info-tile-label { font-size: 10px; font-weight: 700; color: var(--muted); letter-spacing: 0.08em; text-transform: uppercase; }
+    .info-tile-value { font-size: 14px; font-weight: 700; color: var(--text); }
+
+    .trust-note {
+      display: flex; gap: 10px; align-items: flex-start;
+      padding: 14px 18px; border-radius: var(--radius-sm);
+      border: 1px solid rgba(245,158,11,0.22);
+      background: rgba(245,158,11,0.05);
+      font-size: 12px; color: var(--text-2); line-height: 1.6;
+      margin-top: 16px;
+    }
+    .trust-note-icon { font-size: 18px; flex-shrink: 0; margin-top: 1px; }
+
+    @media (max-width: 480px) {
+      .product-hero-name { font-size: 20px; }
+      .product-hero-price { font-size: 28px; }
+      .product-hero-actions { flex-direction: column; }
+    }
+  </style>
+</head>
+<body>
+
+<div class="bg-canvas" aria-hidden="true">
+  <div class="orb orb-1"></div>
+  <div class="orb orb-2"></div>
+  <div class="orb orb-3"></div>
+  <div class="grid-overlay"></div>
+</div>
+
+<div class="app merchant-page">
+
+  <header class="topbar">
+    <div class="brand">Trust<span>Shop</span></div>
+    <div class="topbar-right">
+      <a href="index.html" class="pill" style="text-decoration:none;cursor:pointer;">← Back to agent</a>
+      <button id="themeToggle" class="theme-toggle" aria-label="Toggle theme">🌙</button>
+    </div>
+  </header>
+
+  <div id="content">
+    <div class="product-hero">
+      <div class="product-hero-img-placeholder">🔍</div>
+      <div class="product-hero-body">
+        <p class="muted" style="text-align:center">Loading product details…</p>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<script>
+(function () {
+  // Theme toggle
+  var btn = document.getElementById('themeToggle');
+  var root = document.documentElement;
+  var saved = localStorage.getItem('ts_theme') || 'dark';
+  root.setAttribute('data-theme', saved);
+  btn.textContent = saved === 'light' ? '☀️' : '🌙';
+  btn.addEventListener('click', function () {
+    var next = root.getAttribute('data-theme') === 'light' ? 'dark' : 'light';
+    root.setAttribute('data-theme', next);
+    localStorage.setItem('ts_theme', next);
+    btn.textContent = next === 'light' ? '☀️' : '🌙';
+  });
+
+  var fmt = function (n) {
+    var num = Number(n);
+    if (!isFinite(num) || num <= 0) return "Price unavailable";
+    return new Intl.NumberFormat("en-IN", { style: "currency", currency: "INR", maximumFractionDigits: 0 }).format(num);
+  };
+  var esc = function (s) {
+    return String(s == null ? "" : s).replace(/[&<>"']/g, function (c) {
+      return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c];
+    });
+  };
+
+  var p;
+  try { p = JSON.parse(localStorage.getItem('rz_selected') || 'null'); } catch(_) { p = null; }
+
+  var content = document.getElementById('content');
+
+  if (!p) {
+    content.innerHTML = '<div class="panel" style="text-align:center;padding:48px 24px;margin-top:28px">' +
+      '<div style="font-size:48px;margin-bottom:16px">🔍</div>' +
+      '<h2 style="margin-bottom:12px">No product selected</h2>' +
+      '<p class="muted" style="margin-bottom:24px">Go back to the agent and click "View source" on a product.</p>' +
+      '<a href="index.html" class="btn-primary" style="max-width:220px;margin:0 auto">← Back to Search</a></div>';
+    return;
+  }
+
+  var CAT_ICONS = { mobile: "📱", bike: "🏍️", car: "🚗", general: "🛍️" };
+  var CAT_LABELS = { mobile: "Smartphone", bike: "Motorcycle", car: "Car", general: "General" };
+
+  var price = Number(p.price) || 0;
+  var catIcon  = CAT_ICONS[p.category]  || "🛍️";
+  var catLabel = CAT_LABELS[p.category] || (p.category || "Product");
+
+  var imgHTML = p.image
+    ? '<img class="product-hero-img" src="' + esc(p.image) + '" alt="' + esc(p.name) + '" onerror="this.style.display=\'none\';this.nextElementSibling.style.display=\'flex\'">' +
+      '<div class="product-hero-img-placeholder" style="display:none">' + catIcon + '</div>'
+    : '<div class="product-hero-img-placeholder">' + catIcon + '</div>';
+
+  var sourceName = (p.source || "Live Source").replace(/https?:\/\/(www\.)?/, "").split("/")[0];
+
+  // Build info tiles
+  var tiles = '';
+  if (price > 0)             tiles += '<div class="info-tile"><span class="info-tile-label">Price</span><span class="info-tile-value">' + fmt(price) + '</span></div>';
+  if (p.source)              tiles += '<div class="info-tile"><span class="info-tile-label">Source</span><span class="info-tile-value">' + esc(sourceName) + '</span></div>';
+  if (p.category)            tiles += '<div class="info-tile"><span class="info-tile-label">Category</span><span class="info-tile-value">' + esc(catLabel) + '</span></div>';
+  if (p.match_score != null) tiles += '<div class="info-tile"><span class="info-tile-label">Match Score</span><span class="info-tile-value">' + esc(p.match_score) + '%</span></div>';
+  if (p.checked_at)          tiles += '<div class="info-tile"><span class="info-tile-label">Price checked</span><span class="info-tile-value" style="font-size:12px;">' + new Date(p.checked_at).toLocaleString("en-IN") + '</span></div>';
+
+  content.innerHTML =
+    '<div class="product-hero">' +
+      imgHTML +
+      '<div class="product-hero-body">' +
+        '<div class="product-category-badge">' + catIcon + ' ' + esc(catLabel) + '</div>' +
+        '<h1 class="product-hero-name">' + esc(p.name) + '</h1>' +
+        (price > 0 ? '<div class="product-hero-price">' + fmt(price) + '</div>' : '<p class="muted" style="margin-bottom:20px">Price unavailable</p>') +
+        (p.source_url
+          ? '<div class="product-hero-source"><span class="src-icon">🔗</span><span>Available on <b>' + esc(sourceName) + '</b></span><a href="' + esc(p.source_url) + '" target="_blank" rel="noopener noreferrer">View on seller site ↗</a></div>'
+          : '') +
+        '<div class="product-hero-actions">' +
+          (p.source_url ? '<a href="' + esc(p.source_url) + '" target="_blank" rel="noopener noreferrer" class="btn-primary">Open on ' + esc(sourceName) + ' ↗</a>' : '') +
+          '<a href="index.html" class="btn-ghost">← Back to Search</a>' +
+        '</div>' +
+        (tiles ? '<div class="info-grid">' + tiles + '</div>' : '') +
+        '<div class="trust-note"><span class="trust-note-icon">⚠️</span><span>This is a live listing from <b>' + esc(sourceName) + '</b>. Prices shown were fetched at search time and may have changed. Always verify the final price on the seller\'s website before purchasing.</span></div>' +
+      '</div>' +
+    '</div>';
+}());
+</script>
+</body>
+</html>

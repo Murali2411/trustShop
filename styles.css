@@ -6,22 +6,22 @@
 /* ── CSS Variables — Dark Mode (default) ─────────────────────────────────────── */
 :root {
   /* Backgrounds — near-black warm neutrals */
-  --bg:          #080810;
-  --bg-2:        #0f0f1a;
-  --bg-card:     rgba(255,255,255,0.035);
-  --bg-card-h:   rgba(255,255,255,0.065);
-  --bg-glass:    rgba(8,8,16,0.80);
-  --panel:       rgba(255,255,255,0.038);
-  --panel2:      rgba(255,255,255,0.068);
+  --bg:          #070710;
+  --bg-2:        #0e0e1c;
+  --bg-card:     rgba(255,255,255,0.04);
+  --bg-card-h:   rgba(255,255,255,0.08);
+  --bg-glass:    rgba(7,7,16,0.82);
+  --panel:       rgba(255,255,255,0.05);
+  --panel2:      rgba(255,255,255,0.09);
 
   /* Text */
-  --text:        #f0f0f8;
-  --text-2:      #b0b0cc;
-  --muted:       #666688;
+  --text:        #f2f2fa;
+  --text-2:      #b4b4d0;
+  --muted:       #6868a0;
 
-  /* Borders */
-  --border:      rgba(255,255,255,0.06);
-  --border-s:    rgba(255,255,255,0.12);
+  /* Borders — more visible than before */
+  --border:      rgba(255,255,255,0.10);
+  --border-s:    rgba(255,255,255,0.18);
 
   /* Accents — violet primary, emerald secondary, amber gold (no blue) */
   --accent:      #8b5cf6;      /* violet */
@@ -58,18 +58,18 @@
 
 /* ── Light Mode ──────────────────────────────────────────────────────────────── */
 [data-theme="light"] {
-  --bg:        #f6f6fa;
-  --bg-2:      #ededf5;
-  --bg-card:   rgba(255,255,255,0.90);
+  --bg:        #f4f4f9;
+  --bg-2:      #eaeaf2;
+  --bg-card:   rgba(255,255,255,0.94);
   --bg-card-h: rgba(255,255,255,1);
-  --bg-glass:  rgba(246,246,250,0.88);
-  --panel:     rgba(255,255,255,0.78);
-  --panel2:    rgba(255,255,255,0.95);
-  --text:      #18182a;
-  --text-2:    #36365c;
-  --muted:     #6060a0;
-  --border:    rgba(0,0,50,0.07);
-  --border-s:  rgba(0,0,50,0.14);
+  --bg-glass:  rgba(244,244,249,0.90);
+  --panel:     rgba(255,255,255,0.82);
+  --panel2:    rgba(255,255,255,0.96);
+  --text:      #16162a;
+  --text-2:    #32325a;
+  --muted:     #5858a0;
+  --border:    rgba(0,0,60,0.10);
+  --border-s:  rgba(0,0,60,0.18);
   --shadow-card: 0 4px 20px rgba(0,0,50,0.07);
   --shadow-btn:  0 4px 20px rgba(139,92,246,0.35);
   --shadow-glow: 0 0 30px rgba(139,92,246,0.10);

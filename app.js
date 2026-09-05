@@ -26,6 +26,34 @@ function storageSet(key, value) {
   try { localStorage.setItem(key, JSON.stringify(value)); } catch (_) {}
 }
 
+// ── Static fallback accessories (shown instantly; replaced by live API data) ──
+const STATIC_MOBILE_ACCS = [
+  { type:"Cases & Covers",     type_key:"case",             type_icon:"case",             name:"Back Cover & Case",                price:null, reason:"Protects your phone from drops and scratches.",       live:false, source:"Suggestion" },
+  { type:"Screen Protectors",  type_key:"screen_protector", type_icon:"screen_protector", name:"Tempered Glass Screen Protector",  price:null, reason:"Guards the display against cracks and fingerprints.", live:false, source:"Suggestion" },
+  { type:"Chargers & Cables",  type_key:"charger",          type_icon:"charger",          name:"Fast Charger & USB-C Cable",       price:null, reason:"Keep your phone powered up quickly.",                 live:false, source:"Suggestion" },
+  { type:"Earphones & Earbuds",type_key:"earphones",        type_icon:"earphones",        name:"Wireless Earbuds / TWS",           price:null, reason:"Wireless audio companion for calls and music.",        live:false, source:"Suggestion" },
+];
+const STATIC_BIKE_ACCS = [
+  { type:"Safety Gear",  type_key:"helmet",  type_icon:"helmet", name:"Full-Face Helmet (ISI Certified)",  price:2999, reason:"Mandatory safety — full face shields better.", live:false, source:"Demo" },
+  { type:"Safety Gear",  type_key:"gloves",  type_icon:"gloves", name:"Riding Gloves (Anti-Slip)",         price:799,  reason:"Grip + knuckle protection in all weather.",   live:false, source:"Demo" },
+  { type:"Safety Gear",  type_key:"jacket",  type_icon:"jacket", name:"Riding Jacket with CE Armour",      price:3499, reason:"CE-rated armour at shoulders, elbows, back.", live:false, source:"Demo" },
+  { type:"Maintenance",  type_key:"cover",   type_icon:"cover",  name:"Waterproof Bike Cover",             price:1299, reason:"Protects from rain, dust, UV when parked.",   live:false, source:"Demo" },
+  { type:"Maintenance",  type_key:"lock",    type_icon:"lock",   name:"Heavy-Duty Chain Lock",             price:599,  reason:"Anti-theft security for urban parking.",      live:false, source:"Demo" },
+  { type:"Storage",      type_key:"bag",     type_icon:"bag",    name:"Saddle Bag / Tail Bag (20L)",       price:1599, reason:"Expandable bag for commute and touring.",     live:false, source:"Demo" },
+  { type:"Style & Mods", type_key:"mount",   type_icon:"mount",  name:"Phone Holder (360° Rotate)",        price:399,  reason:"Navigation-ready mount for any handlebar.",   live:false, source:"Demo" },
+  { type:"Protection",   type_key:"guard",   type_icon:"guard",  name:"Crash Guard / Engine Guard",        price:2199, reason:"Steel guard absorbs impact in tip-overs.",    live:false, source:"Demo" },
+];
+const STATIC_CAR_ACCS = [
+  { type:"Interior",      type_key:"seat",      type_icon:"seat",      name:"Leatherette Seat Covers (Custom Fit)", price:3499, reason:"Protects original upholstery; easy to clean.", live:false, source:"Demo" },
+  { type:"Interior",      type_key:"mat",       type_icon:"mat",       name:"3D Mat Set (Full Set)",                price:1799, reason:"Waterproof mats trap dirt and water.",         live:false, source:"Demo" },
+  { type:"Technology",    type_key:"camera",    type_icon:"camera",    name:"Dash Camera (Front + Rear, 4K)",       price:3999, reason:"Evidence in accidents; 24h parking mode.",     live:false, source:"Demo" },
+  { type:"Technology",    type_key:"mount",     type_icon:"mount",     name:"Wireless Phone Charger Mount (15W)",   price:1299, reason:"Fast wireless charging on the dashboard.",     live:false, source:"Demo" },
+  { type:"Protection",    type_key:"cover",     type_icon:"cover",     name:"Waterproof Car Body Cover",            price:2499, reason:"Full body cover against rain, hail, dust.",    live:false, source:"Demo" },
+  { type:"Protection",    type_key:"sunshade",  type_icon:"sunshade",  name:"Windshield Sun Shade (Foldable)",      price:599,  reason:"Reduces cabin temp by up to 20°C in summer.",  live:false, source:"Demo" },
+  { type:"Interior",      type_key:"steering",  type_icon:"steering",  name:"Steering Wheel Cover (Leather)",       price:699,  reason:"Better grip; protects steering from UV.",      live:false, source:"Demo" },
+  { type:"Emergency Kit", type_key:"emergency", type_icon:"emergency", name:"Jump Starter + Power Bank (12000mAh)",price:2999, reason:"Start a dead battery anywhere on the road.",   live:false, source:"Demo" },
+];
+
 // ── State ─────────────────────────────────────────────────────────────────────
 let lastResults = [];
 let currentSearch = null;          // { category, query (raw text), params }
@@ -886,22 +914,28 @@ function renderCart() {
     </section>`;
   }
 
-  // ── Mobile FBT — live SerpAPI accessories per phone model ───────────────────
+  // ── Mobile FBT — live SerpAPI accessories (fallback to static instantly) ─────
   const mobileFBT = items
     .filter(x => x.category === "mobile")
     .map(product => {
       const key = product.id || product.name;
-      return buildFBTSection(product, mobileRecommendations[key], "🛒", "Frequently Bought Together");
+      // Use live data if available, else static fallback (always shows)
+      const cached = mobileRecommendations[key];
+      const rec = cached || { product, items: STATIC_MOBILE_ACCS.map(a => ({ ...a, compatible_model: product.name })) };
+      return buildFBTSection(product, rec, "🛒", "Frequently Bought Together");
     }).join("");
 
-  // ── Vehicle FBT — curated real-world accessories per bike/car ───────────────
+  // ── Vehicle FBT — curated real-world accessories (always shows) ─────────────
   const vehicleFBT = items
     .filter(x => x.category === "bike" || x.category === "car")
     .map(product => {
       const key = product.id || product.name;
+      const cached = vehicleRecommendations[key];
+      const staticItems = product.category === "bike" ? STATIC_BIKE_ACCS : STATIC_CAR_ACCS;
+      const rec = cached || { product, items: staticItems.map(a => ({ ...a, compatible_model: product.name })) };
       const emoji = product.category === "bike" ? "🏍️" : "🚗";
       const label = product.category === "bike" ? "Essential Bike Accessories" : "Must-Have Car Accessories";
-      return buildFBTSection(product, vehicleRecommendations[key], emoji, label);
+      return buildFBTSection(product, rec, emoji, label);
     }).join("");
 
   const recsHTML = mobileFBT + vehicleFBT;
